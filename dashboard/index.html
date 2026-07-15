@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CUSTODY — Console</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+</head>
+<body>
+
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6l8-4z"/><path d="M9.5 12l2 2 3.5-3.5"/></svg>
+      </div>
+      <span class="brand-name">CUSTODY</span>
+    </div>
+
+    <nav class="nav-group">
+      <div class="nav-group-label">Recovery</div>
+      <div id="nav-primary"></div>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="env-status"><span class="dot"></span> Gateway connected</div>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <div class="topbar-title">
+        <span class="eyebrow" id="topbar-view-eyebrow">Console</span>
+        <h1 id="topbar-view-title">Overview</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="avatar" id="chip-initials">—</div>
+          <div class="who">
+            <span class="uname" id="chip-username">—</span>
+            <span class="urole" id="chip-role">—</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-icon" id="btn-logout" title="Sign out" aria-label="Sign out">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="content" id="content">
+      <!-- Views are mounted here by app.js / modules.js -->
+    </main>
+  </div>
+
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/components.js"></script>
+<script src="js/modules.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

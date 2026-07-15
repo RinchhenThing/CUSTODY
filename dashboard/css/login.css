@@ -1,0 +1,268 @@
+/* ==========================================================================
+   CUSTODY — Login
+   ========================================================================== */
+
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 440px;
+}
+
+/* --- Left: hero / signature moment --- */
+.auth-hero {
+  position: relative;
+  border-right: 1px solid var(--hairline);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 40px 48px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(79,182,232,0.08), transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(47,217,138,0.07), transparent 45%);
+}
+
+.auth-hero-top { display: flex; align-items: center; gap: 10px; position: relative; z-index: 2; }
+.auth-hero-top .mark {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: linear-gradient(155deg, var(--verify), var(--info));
+  display: flex; align-items: center; justify-content: center; color: #06131c;
+}
+.auth-hero-top .mark svg { width: 17px; height: 17px; }
+.auth-hero-top .brand-name { font-family: var(--font-mono); font-weight: 600; letter-spacing: 0.02em; }
+
+.hero-center {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.hero-center h1 {
+  font-size: 34px;
+  line-height: 1.15;
+  max-width: 480px;
+  letter-spacing: -0.015em;
+}
+.hero-center h1 .accent { color: var(--verify); }
+.hero-center p { color: var(--text-muted); max-width: 420px; font-size: 14.5px; }
+
+/* Signature element: fingerprint / hash chain with scan sweep */
+.integrity-glyph {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  border: 1px solid var(--hairline-lt);
+  border-radius: var(--radius-lg);
+  background: rgba(16,22,29,0.6);
+  padding: 18px 20px;
+  overflow: hidden;
+}
+.integrity-glyph .ig-row {
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-dim);
+  margin-bottom: 12px; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.integrity-glyph .ig-row .live { display: flex; align-items: center; gap: 6px; color: var(--verify); }
+.integrity-glyph .ig-row .live .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--verify); animation: pulse-dot 1.6s ease infinite; }
+@keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+.hash-lines { display: flex; flex-direction: column; gap: 7px; }
+.hash-lines .hl {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex; align-items: center; gap: 8px;
+}
+.hash-lines .hl .tick { color: var(--verify); }
+.hash-lines .hl span.frag { color: var(--text-dim); }
+
+.scan-sweep {
+  position: absolute;
+  left: 0; right: 0; height: 46px;
+  background: linear-gradient(180deg, transparent, rgba(79,182,232,0.15), transparent);
+  animation: sweep 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes sweep {
+  0% { top: -46px; }
+  100% { top: 100%; }
+}
+
+.hero-foot { position: relative; z-index: 2; display: flex; gap: 28px; }
+.hero-foot .stat-mini .val { font-family: var(--font-mono); font-size: 18px; font-weight: 600; }
+.hero-foot .stat-mini .lbl { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+/* --- Right: form --- */
+.auth-form-pane {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 48px;
+}
+.auth-form-pane .form-head { margin-bottom: 26px; }
+.auth-form-pane .form-head h2 { font-size: 21px; margin-bottom: 6px; }
+.auth-form-pane .form-head p { color: var(--text-muted); font-size: 13.5px; }
+
+.auth-form-pane .btn-primary { width: 100%; justify-content: center; padding: 11px; margin-top: 4px; }
+
+.form-banner {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--critical);
+  background: var(--critical-dim);
+  color: var(--critical);
+  font-size: 12.5px;
+  margin-bottom: 16px;
+}
+.form-banner.visible { display: flex; }
+
+.form-foot { margin-top: 18px; text-align: center; font-size: 13px; color: var(--text-muted); }
+.form-foot a { color: var(--info); font-weight: 500; }
+.form-foot a:hover { text-decoration: underline; }
+
+.demo-creds {
+  margin-top: 22px;
+  border-top: 1px dashed var(--hairline-lt);
+  padding-top: 16px;
+}
+.demo-creds .dc-label { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
+.demo-creds .dc-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 0; font-size: 12.5px;
+}
+.demo-creds .dc-row button { font-size: 11px; }
+
+@media (max-width: 900px) {
+  .auth-shell { grid-template-columns: 1fr; }
+  .auth-hero { display: none; }
+}
+
+
+/* ==========================================================================
+   RESPONSIVE ENHANCEMENTS
+   ========================================================================== */
+
+/* Laptops */
+@media (max-width: 1200px) {
+  .auth-shell {
+    grid-template-columns: 1fr 400px;
+  }
+
+  .auth-hero,
+  .auth-form-pane {
+    padding: 32px;
+  }
+
+  .hero-center h1 {
+    font-size: 30px;
+  }
+}
+
+/* Tablets */
+@media (max-width: 900px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-hero {
+    display: none;
+  }
+
+  .auth-form-pane {
+    min-height: 100vh;
+    justify-content: center;
+    padding: 32px 24px;
+    max-width: 520px;
+    width: 100%;
+    margin: 0 auto;
+  }
+}
+
+/* Phones */
+@media (max-width: 640px) {
+  .auth-form-pane {
+    padding: 24px 18px;
+  }
+
+  .auth-form-pane .form-head h2 {
+    font-size: 20px;
+  }
+
+  .auth-form-pane .form-head p {
+    font-size: 13px;
+  }
+
+  .form-foot {
+    font-size: 12px;
+  }
+
+  .demo-creds .dc-row {
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .demo-creds .dc-row button {
+    width: 100%;
+  }
+}
+
+/* Small Phones */
+@media (max-width: 480px) {
+  .auth-form-pane {
+    padding: 20px 14px;
+  }
+
+  .auth-form-pane .form-head {
+    margin-bottom: 20px;
+  }
+
+  .auth-form-pane .form-head h2 {
+    font-size: 18px;
+  }
+
+  .form-banner {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .demo-creds {
+    margin-top: 18px;
+  }
+
+  .demo-creds .dc-row {
+    font-size: 12px;
+  }
+}
+
+/* Very Small Devices */
+@media (max-width: 360px) {
+  .auth-form-pane {
+    padding: 16px 12px;
+  }
+
+  .auth-form-pane .form-head h2 {
+    font-size: 17px;
+  }
+}
+
+/* Prevent overflow */
+.auth-form-pane,
+.form-head,
+.demo-creds,
+.form-banner {
+  min-width: 0;
+}
+
+.hero-center h1,
+.hero-center p,
+.demo-creds .dc-row {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}

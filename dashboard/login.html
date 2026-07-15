@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign in — CUSTODY</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/login.css" />
+</head>
+<body data-page="login">
+
+<div class="auth-shell">
+
+  <!-- Hero / signature moment -->
+  <section class="auth-hero">
+    <div class="auth-hero-top">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6l8-4z"/><path d="M9.5 12l2 2 3.5-3.5"/></svg>
+      </div>
+      <span class="brand-name">CUSTODY</span>
+    </div>
+
+    <div class="hero-center">
+      <h1>Chain of custody for every byte you can't afford to lose<span class="accent">.</span></h1>
+      <p>Verified backups, isolated threats, and an audit trail that never forgets — one console for the whole recovery pipeline.</p>
+
+      <div class="integrity-glyph">
+        <div class="scan-sweep"></div>
+        <div class="ig-row">
+          <span>Integrity ledger</span>
+          <span class="live"><span class="dot"></span> live</span>
+        </div>
+        <div class="hash-lines">
+          <div class="hl"><span class="tick">✓</span> finance_db.bak <span class="frag">a13f9c…8e2b</span></div>
+          <div class="hl"><span class="tick">✓</span> vm_snapshot_04.img <span class="frag">7c0d21…44aa</span></div>
+          <div class="hl"><span class="tick">✓</span> orders_2026.sql <span class="frag">f581bb…12c9</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-foot">
+      <div class="stat-mini"><div class="val">SHA-256</div><div class="lbl">version fingerprinting</div></div>
+      <div class="stat-mini"><div class="val">4 agents</div><div class="lbl">isolated VM tiers</div></div>
+      <div class="stat-mini"><div class="val">RBAC</div><div class="lbl">Admin · Operator · Auditor</div></div>
+    </div>
+  </section>
+
+  <!-- Form -->
+  <section class="auth-form-pane">
+    <div class="form-head">
+      <h2>Sign in to the console</h2>
+      <p>Enter your operator credentials to continue.</p>
+    </div>
+
+    <div class="form-banner" id="login-error"></div>
+
+    <form id="login-form" novalidate>
+      <div class="field">
+        <label for="login-username">Username</label>
+        <input id="login-username" type="text" autocomplete="username" required />
+      </div>
+      <div class="field">
+        <label for="login-password">Password</label>
+        <input id="login-password" type="password" autocomplete="current-password" required />
+      </div>
+      <button type="submit" class="btn btn-primary" id="login-submit">Sign in</button>
+    </form>
+
+    <div class="demo-creds">
+      <div class="dc-label">Seeded demo accounts</div>
+      <div class="dc-row"><span class="mono">admin</span><button type="button" class="btn btn-ghost btn-sm" data-fill="admin">Use</button></div>
+      <div class="dc-row"><span class="mono">operator</span><button type="button" class="btn btn-ghost btn-sm" data-fill="operator">Use</button></div>
+      <div class="dc-row"><span class="mono">auditor</span><button type="button" class="btn btn-ghost btn-sm" data-fill="auditor">Use</button></div>
+    </div>
+
+    <p class="form-foot">Need a console account? <a href="register.html">Register here</a></p>
+  </section>
+
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/components.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+/* ==========================================================================
+   CUSTODY — Ransomware-Resilient Backup Orchestrator
+   Design tokens, reset, and base primitives.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* --- Surface --- */
+  --void:         #0a0e13;
+  --panel:        #10161d;
+  --panel-raised: #171f28;
+  --panel-hover:  #1c2531;
+  --hairline:     #232d38;
+  --hairline-lt:  #2c3846;
+
+  /* --- Text --- */
+  --text-primary: #e7ecf2;
+  --text-muted:   #8a9aac;
+  --text-dim:     #57667a;
+
+  /* --- Semantic status --- */
+  --verify:       #2fd98a;  /* online / clean / secure / approved / released */
+  --verify-dim:   rgba(47, 217, 138, 0.12);
+  --warn:         #e8a33d;  /* degraded / pending / suspicious */
+  --warn-dim:     rgba(232, 163, 61, 0.12);
+  --critical:     #ef5350;  /* offline / malicious / rejected / locked */
+  --critical-dim: rgba(239, 83, 80, 0.12);
+  --info:         #4fb6e8;  /* links, focus, auditor accent */
+  --info-dim:     rgba(79, 182, 232, 0.12);
+
+  /* --- Type --- */
+  --font-ui:   'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+
+  /* --- Layout --- */
+  --sidebar-w: 232px;
+  --topbar-h: 60px;
+  --radius-sm: 4px;
+  --radius-md: 7px;
+  --radius-lg: 12px;
+  --shadow-panel: 0 1px 0 rgba(0,0,0,0.4), 0 12px 32px -16px rgba(0,0,0,0.65);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { color-scheme: dark; }
+
+body {
+  background: var(--void);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(circle at 10% 6%, rgba(79,182,232,0.05), transparent 40%),
+    radial-gradient(circle at 92% 92%, rgba(47,217,138,0.04), transparent 45%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+a { color: inherit; text-decoration: none; }
+ul, ol { list-style: none; }
+button, input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+button { cursor: pointer; }
+h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.01em; }
+
+:focus-visible {
+  outline: 2px solid var(--info);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+::selection { background: rgba(79,182,232,0.28); }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--hairline-lt); border-radius: 8px; border: 2px solid var(--void); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+.mono { font-family: var(--font-mono); }
+
+.hash {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  color: var(--text-muted);
+  background: var(--panel-raised);
+  border: 1px solid var(--hairline);
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVE LAYER
+   Non-destructive responsive overrides
+   ========================================================================== */
+
+/* Fluid typography */
+html {
+  font-size: clamp(13px, 0.85vw + 10px, 14px);
+}
+
+/* Prevent horizontal overflow */
+body {
+  overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Ensure long hashes/IDs don't overflow */
+.hash,
+.mono {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Tablets */
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-w: 200px;
+    --topbar-h: 56px;
+  }
+}
+
+/* Small tablets */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-w: 72px;
+    --topbar-h: 56px;
+  }
+
+  body {
+    font-size: 13px;
+  }
+
+  h1 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+  }
+
+  h2 {
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+  }
+
+  h3 {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+  }
+
+  .hash {
+    font-size: 11px;
+    padding: 2px 5px;
+  }
+
+  .eyebrow {
+    font-size: 10px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  :root {
+    --sidebar-w: 0px;
+    --topbar-h: 54px;
+    --radius-lg: 10px;
+    --radius-md: 6px;
+  }
+
+  body {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .hash {
+    white-space: normal;
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  body {
+    font-size: 12.5px;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+  }
+
+  h2 {
+    font-size: 1.15rem;
+  }
+
+  h3 {
+    font-size: 1rem;
+  }
+
+  .hash {
+    font-size: 10px;
+    padding: 2px 4px;
+  }
+
+  .eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+  }
+}
+
+/* Ultra-small devices */
+@media (max-width: 360px) {
+  body {
+    font-size: 12px;
+  }
+
+  :root {
+    --radius-lg: 8px;
+    --radius-md: 5px;
+    --radius-sm: 3px;
+  }
+}

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Create account — CUSTODY</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/login.css" />
+<link rel="stylesheet" href="css/register.css" />
+</head>
+<body data-page="register">
+
+<div class="auth-shell">
+
+  <section class="auth-hero">
+    <div class="auth-hero-top">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6l8-4z"/><path d="M9.5 12l2 2 3.5-3.5"/></svg>
+      </div>
+      <span class="brand-name">CUSTODY</span>
+    </div>
+
+    <div class="hero-center">
+      <h1>Every operator gets exactly the access their role requires<span class="accent">.</span></h1>
+      <p>CUSTODY enforces role-based access at the gateway — Admins, Operators, and Auditors each see a console shaped to their responsibilities.</p>
+
+      <div class="integrity-glyph">
+        <div class="scan-sweep"></div>
+        <div class="ig-row">
+          <span>Role capability matrix</span>
+          <span class="live"><span class="dot"></span> enforced</span>
+        </div>
+        <div class="hash-lines">
+          <div class="hl"><span class="tick">✓</span> Admin <span class="frag">full system control</span></div>
+          <div class="hl"><span class="tick">✓</span> Operator <span class="frag">backups · restore · quarantine view</span></div>
+          <div class="hl"><span class="tick">✓</span> Auditor <span class="frag">read-only compliance access</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-foot">
+      <div class="stat-mini"><div class="val">bcrypt</div><div class="lbl">password hashing</div></div>
+      <div class="stat-mini"><div class="val">JWT</div><div class="lbl">signed session tokens</div></div>
+      <div class="stat-mini"><div class="val">RBAC</div><div class="lbl">per-endpoint enforcement</div></div>
+    </div>
+  </section>
+
+  <section class="auth-form-pane">
+    <div class="form-head">
+      <h2>Create a console account</h2>
+      <p>Choose a workspace role — this determines what you can see and do.</p>
+    </div>
+
+    <div class="form-banner" id="register-error"></div>
+
+    <form id="register-form" novalidate>
+      <div class="field">
+        <label for="register-username">Username</label>
+        <input id="register-username" type="text" autocomplete="username" required />
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="register-password">Password</label>
+          <input id="register-password" type="password" autocomplete="new-password" required />
+          <div class="password-strength" id="password-strength">
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="register-confirm">Confirm password</label>
+          <input id="register-confirm" type="password" autocomplete="new-password" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Workspace role</label>
+        <div class="role-options" id="role-options"></div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="register-submit">Create account</button>
+    </form>
+
+    <p class="form-foot">Already have an account? <a href="login.html">Sign in</a></p>
+  </section>
+
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/components.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>
