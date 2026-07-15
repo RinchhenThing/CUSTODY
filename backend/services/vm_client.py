@@ -79,6 +79,12 @@ class VMAgentClient:
     def purge_quarantine(self, file_hash: str) -> Dict[str, Any]:
         """Permanently annihilates a confirmed ransomware binary payload from isolated storage."""
         return self._safe_request("DELETE", f"{self.quarantine_url}/api/quarantine/purge/{file_hash}")
+    
+    #recently added
+    '''
+    def purge_malicious_payload(self, file_hash: str):
+        return self.purge_quarantine(file_hash)
+    '''
 
 # Instantiate global communication agent client
 vm_client = VMAgentClient()

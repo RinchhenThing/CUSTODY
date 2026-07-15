@@ -52,6 +52,12 @@ def register_user(
         .filter(Role.id == payload.role_id)
         .first()
     )
+    #recently added
+    if role.name == "Admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Admin accounts cannot be self-registered."
+        )
 
     if not role:
         raise HTTPException(

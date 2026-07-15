@@ -40,7 +40,8 @@ def purge_malicious_payload(file_id: int, db: Session = Depends(get_db)):
     if not q_file:
         raise HTTPException(status_code=404, detail="Target file not found")
         
-    agent_call = vm_client.purge_malicious_payload(q_file.sha256_hash)
+    # agent_call = vm_client.purge_malicious_payload(q_file.sha256_hash)
+    agent_call = vm_client.purge_quarantine(q_file.sha256_hash) #recently added 
     if agent_call["status"] != "ONLINE":
          raise HTTPException(status_code=502, detail="Quarantine VM Agent failure during purge operation")
          
