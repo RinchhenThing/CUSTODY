@@ -3,9 +3,9 @@ Authentication Router
 Manages user registration, login, logout, and JWT token issuance.
 """
 
+import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-import datetime
 
 from database import get_db
 from models.models import User, Role, Session as UserSession
@@ -14,6 +14,7 @@ from schemas.schemas import (
     TokenResponse,
     UserCreate,
     UserResponse,
+    LogoutRequest,  # Added a simple Pydantic schema for secure body handling
 )
 from auth.security import (
     verify_password,
@@ -34,7 +35,6 @@ def register_user(
     Public registration endpoint.
     Creates a new user account with a selected role.
     """
-
     existing_user = (
         db.query(User)
         .filter(User.username == payload.username)
@@ -47,22 +47,23 @@ def register_user(
             detail="Username is already registered.",
         )
 
+    # Fixed Indentation here
     role = (
         db.query(Role)
         .filter(Role.id == payload.role_id)
         .first()
     )
-    #recently added
-    if role.name == "Admin":
-        raise HTTPException(
-            status_code=403,
-            detail="Admin accounts cannot be self-registered."
-        )
 
     if not role:
         raise HTTPException(
             status_code=404,
             detail="Selected role is invalid.",
+        )
+
+    if role.name == "Admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Admin accounts cannot be self-registered."
         )
 
     new_user = User(
@@ -88,7 +89,6 @@ def login(
     """
     Verifies credentials and generates JWT tokens.
     """
-
     user = (
         db.query(User)
         .filter(User.username == payload.username)
@@ -132,10 +132,11 @@ def login(
         role=user.role.name,
     )
 
+    # Updated deprecated utcnow() to timezone-aware UTC
     session = UserSession(
         user_id=user.id,
         token=access_token,
-        expires_at=datetime.datetime.utcnow()
+        expires_at=datetime.datetime.now(datetime.timezone.utc)
         + datetime.timedelta(hours=1),
     )
 
@@ -151,16 +152,15 @@ def login(
 
 @router.post("/logout")
 def logout(
-    token: str,
+    payload: LogoutRequest,  # Changed from query string to secure body model
     db: Session = Depends(get_db),
 ):
     """
     Invalidates the current session token.
     """
-
     session = (
         db.query(UserSession)
-        .filter(UserSession.token == token)
+        .filter(UserSession.token == payload.token)
         .first()
     )
 
