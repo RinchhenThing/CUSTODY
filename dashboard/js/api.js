@@ -112,8 +112,11 @@ const API = (() => {
     // --- auth ---
     login: (username, password) => request('POST', '/auth/login', { body: { username, password }, auth: false }),
     register: (username, password, role_id) => request('POST', '/auth/register', { body: { username, password, role_id }, auth: false }),
-    logout: (token) => request('POST', '/auth/logout', { params: { token } }),
-
+    //logout: (token) => request('POST', '/auth/logout', { params: { token } }),
+    logout: (token) =>
+      request('POST', '/auth/logout', {
+        body: { token }
+      }),
     // --- dashboard ---
     getDashboardSummary: () => request('GET', '/dashboard/summary'),
 

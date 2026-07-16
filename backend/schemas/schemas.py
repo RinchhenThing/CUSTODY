@@ -7,6 +7,9 @@ class LoginRequest(BaseModel):
     username: str = Field(..., examples=["admin"])
     password: str = Field(..., examples=["password123"])
 
+class LogoutRequest(BaseModel):
+    refresh_token: str
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
