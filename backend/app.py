@@ -7,8 +7,10 @@ import asyncio
 from models.models import AuditLog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from apscheduler.schedulers.background import BackgroundScheduler
 from database import engine, Base, SessionLocal
 from config import settings
+from services.vm_client import vm_client
 
 # Import the structural middleware layer
 from middleware.audit import AuditLogMiddleware
@@ -32,6 +34,8 @@ app = FastAPI(
     docs_url="/api/docs",
     redoc_url="/api/redoc"
 )
+
+scheduler = BackgroundScheduler()
 
 # Configure CORS to allow frontend index.html cross-origin communication
 app.add_middleware(
@@ -173,6 +177,11 @@ def seed_system_data():
 @app.on_event("startup")
 async def start_background_tasks():
     asyncio.create_task(cleanup_audit_logs_task())
+
+@app.on_event("startup")
+def start_scan_scheduler():
+    scheduler.add_job(vm_client.trigger_scan_cycle, "interval", seconds=30)
+    scheduler.start()
 
 if __name__ == "__main__":
     # Launch application inside local development loop matching static assets configuration

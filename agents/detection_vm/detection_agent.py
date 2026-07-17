@@ -81,7 +81,7 @@ def scan(req: ScanRequest, x_api_key: str = Header(...)):
     }
 
 
-@app.post("/scan-directory")
+@app.post("/api/scan/trigger")
 def scan_directory(force_rescan: bool = False, x_api_key: str = Header(...)):
     """
     Scans every file currently in WATCH_DIR that hasn't been processed before.

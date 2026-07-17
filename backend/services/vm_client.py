@@ -108,6 +108,11 @@ class VMAgentClient:
             "DELETE", f"{self.quarantine_url}/api/quarantine/purge/{file_hash}"
         )
 
+    # --- Detection Agent Operations ---
+    def trigger_scan_cycle(self) -> Dict[str, Any]:
+        """Triggers a manual sweep/scan cycle on the Detection VM's watch folder."""
+        return self._safe_request("POST", f"{self.detection_url}/api/scan/trigger")
+
 
 # Instantiate global communication agent client
 vm_client = VMAgentClient()
