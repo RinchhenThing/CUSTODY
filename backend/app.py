@@ -3,6 +3,8 @@ Ransomware-Resilient Backup Orchestrator Gateway Core
 Main application initialization, middleware routing, CORS bindings, and database seeding.
 """
 import uvicorn
+import asyncio
+from models.models import AuditLog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base, SessionLocal
@@ -56,6 +58,22 @@ app.include_router(logs.router, prefix=settings.API_V1_STR)
 
 # Mount the frontend dashboard workspace directory cleanly
 app.mount("/", StaticFiles(directory="../dashboard", html=True), name="frontend")
+
+
+async def cleanup_audit_logs_task():
+    while True:
+        await asyncio.sleep(60 * 60 * 24)  # every 24 hours
+
+        db = SessionLocal()
+        try:
+            deleted = db.query(AuditLog).delete()
+            db.commit()
+            print(f"[AUDIT CLEANUP] Deleted {deleted} audit log entries")
+        except Exception as e:
+            db.rollback()
+            print(f"[AUDIT CLEANUP ERROR] {e}")
+        finally:
+            db.close()
 
 @app.on_event("startup")
 def seed_system_data():
@@ -151,6 +169,10 @@ def seed_system_data():
         print(f"[-] Database initialization failure: {str(e)}")
     finally:
         db.close()
+
+@app.on_event("startup")
+async def start_background_tasks():
+    asyncio.create_task(cleanup_audit_logs_task())
 
 if __name__ == "__main__":
     # Launch application inside local development loop matching static assets configuration
