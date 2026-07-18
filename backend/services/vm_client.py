@@ -1,6 +1,6 @@
 """
 VM Client Service Module
-Handles all safe, decoupled HTTP communication with external VM agents.
+Provides lean, decoupled HTTP communication channels for central engine microservices.
 """
 
 import requests
@@ -8,21 +8,19 @@ from typing import Dict, Any
 from config import settings
 
 
-class VMAgentClient:
-    def __init__(self):
-        self.production_url = settings.PRODUCTION_AGENT_URL
-        self.detection_url = settings.DETECTION_AGENT_URL
-        self.backup_url = settings.BACKUP_AGENT_URL
-        self.quarantine_url = settings.QUARANTINE_AGENT_URL
-        self.timeout = 5.0  # Safe internal socket timeout in seconds
+class BaseEngineClient:
+    """Core request pipeline offering exception shielding and timeout control."""
+    def __init__(self, base_url: str):
+        self.base_url = base_url
+        self.timeout = 5.0  # Internal safety socket timeout
 
-    def _safe_request(self, method: str, url: str, **kwargs) -> Dict[str, Any]:
-        """Executes network calls safely, intercepting errors to provide state objects."""
+    def _safe_request(self, method: str, endpoint: str, **kwargs) -> Dict[str, Any]:
+        """Safely dispatches network operations, wrapping exceptions in uniform status payloads."""
+        url = f"{self.base_url.rstrip('/')}/{endpoint.lstrip('/')}"
         try:
             response = requests.request(method, url, timeout=self.timeout, **kwargs)
             
             if response.status_code in [200, 201]:
-                # Safely parse JSON to avoid crashes on 204 No Content or invalid formats
                 try:
                     data = response.json()
                 except ValueError:
@@ -32,87 +30,138 @@ class VMAgentClient:
             return {
                 "status": "DEGRADED",
                 "data": None,
-                "error": f"Agent returned status code {response.status_code}",
+                "error": f"Engine returned status code {response.status_code}",
             }
         except requests.exceptions.Timeout:
             return {
                 "status": "OFFLINE",
                 "data": None,
-                "error": "Agent request timed out",
+                "error": "Engine connection timed out",
             }
         except requests.exceptions.RequestException as e:
             return {"status": "OFFLINE", "data": None, "error": str(e)}
 
-    # --- Health Matrix Endpoints ---
-    def get_production_health(self) -> Dict[str, Any]:
-        return self._safe_request("GET", f"{self.production_url}/api/health")
+
+class DetectionClient(BaseEngineClient):
+    """Interfaces with Detection Engine Core telemetry and observation channels."""
+    def __init__(self):
+        url = getattr(settings, "DETECTION_SERVICE_URL", "http://localhost:8001")
+        super().__init__(url)
 
     def get_detection_health(self) -> Dict[str, Any]:
-        return self._safe_request("GET", f"{self.detection_url}/api/health")
+        """Polls heartbeats from the Detection Core system."""
+        return self._safe_request("GET", "/api/health")
+
+    def get_detection_stats(self) -> Dict[str, Any]:
+        """Extracts runtime operations metrics and watch folder performance indicators."""
+        return self._safe_request("GET", "/api/stats")
+
+    def get_detection_info(self) -> Dict[str, Any]:
+        """Fetches architectural configuration environments from the engine metadata catalog."""
+        return self._safe_request("GET", "/api/service-info")
+
+
+class BackupClient(BaseEngineClient):
+    """Interfaces with Backup Engine Core replication layers and catalog tables."""
+    def __init__(self):
+        url = getattr(settings, "BACKUP_SERVICE_URL", "http://localhost:8002")
+        super().__init__(url)
 
     def get_backup_health(self) -> Dict[str, Any]:
-        return self._safe_request("GET", f"{self.backup_url}/api/health")
+        """Polls heartbeats from the Backup Core system."""
+        return self._safe_request("GET", "/api/health")
 
-    def get_quarantine_health(self) -> Dict[str, Any]:
-        return self._safe_request("GET", f"{self.quarantine_url}/api/health")
+    def get_backup_stats(self) -> Dict[str, Any]:
+        """Queries ingestion processing queues and database summary counts."""
+        return self._safe_request("GET", "/api/stats")
 
-    # --- Backup Agent Operations ---
-    def get_backup_storage(self) -> Dict[str, Any]:
-        """Fetches active storage capacities and hardware status from Backup VM."""
-        return self._safe_request("GET", f"{self.backup_url}/api/storage/info")
+    def get_backup_info(self) -> Dict[str, Any]:
+        """Queries underlying hardware parameters and system configuration summaries."""
+        return self._safe_request("GET", "/api/service-info")
 
-    def trigger_backup_deletion(self, storage_path: str) -> Dict[str, Any]:
-        """Instructs the Backup agent to erase an unlinked, expired, or corrupted version file."""
+    def request_restore(self, path: str, version: int) -> Dict[str, Any]:
+        """Pushes an execution command targeting a clean historic path reference."""
+        payload = {"path": path, "version": version}
+        return self._safe_request("POST", "/api/restore", json=payload)
+    
+    # services/vm_client.py
+
+    def get_backup_catalog(self) -> Dict[str, Any]:
+        """Retrieves backup catalog inventory from Backup VM."""
         return self._safe_request(
-            "POST",
-            f"{self.backup_url}/api/storage/delete",
-            json={"path": storage_path},
+            "GET",
+            "/api/catalog"
+        )
+    def trigger_backup_deletion(self, storage_path: str) -> Dict[str, Any]:
+        """
+        Requests Backup VM agent to delete a stored backup object.
+        """
+
+        payload = {
+            "storage_path": storage_path
+        }
+
+        return self._safe_request(
+            "DELETE",
+            "/api/backups/delete",
+            json=payload
         )
 
-    # --- Restore Manager Operations ---
-    def request_restore(
-        self, sha256_hash: str, storage_path: str, destination_path: str
+class QuarantineClient(BaseEngineClient):
+    """
+    Interfaces with Quarantine VM isolation and recovery operations.
+    """
+
+    def __init__(self):
+        url = getattr(
+            settings,
+            "QUARANTINE_SERVICE_URL",
+            "http://localhost:8003"
+        )
+        super().__init__(url)
+
+
+    def release_quarantine(
+        self,
+        sha256_hash: str,
+        release_to_path: str
     ) -> Dict[str, Any]:
         """
-        Commands the Backup VM agent to verify hash integrity and securely
-        pipe the clean binary straight back to the designated Production path.
+        Requests release of an isolated file.
         """
+
         payload = {
-            "sha256": sha256_hash,
-            "storage_path": storage_path,
-            "destination_path": destination_path,
+            "sha256_hash": sha256_hash,
+            "release_to_path": release_to_path
         }
-        return self._safe_request(
-            "POST", f"{self.backup_url}/api/restore/execute", json=payload
-        )
 
-    # --- Quarantine Agent Operations ---
-    def get_quarantine_files_status(self) -> Dict[str, Any]:
-        """Pulls runtime operational state details for sandbox analysis updates."""
-        return self._safe_request(
-            "GET", f"{self.quarantine_url}/api/quarantine/status"
-        )
-
-    def release_quarantine(self, file_hash: str, target_path: str) -> Dict[str, Any]:
-        """Commands the Quarantine VM to decrypt and pass a cleared binary back to production."""
-        payload = {"sha256": file_hash, "destination_path": target_path}
         return self._safe_request(
             "POST",
-            f"{self.quarantine_url}/api/quarantine/release",
-            json=payload,
+            "/api/quarantine/release",
+            json=payload
         )
 
-    def purge_quarantine(self, file_hash: str) -> Dict[str, Any]:
-        """Permanently annihilates a confirmed ransomware binary payload from isolated storage."""
+
+    def purge_quarantine(
+        self,
+        sha256_hash: str
+    ) -> Dict[str, Any]:
+        """
+        Permanently removes quarantined payload.
+        """
+
+        payload = {
+            "sha256_hash": sha256_hash
+        }
+
         return self._safe_request(
-            "DELETE", f"{self.quarantine_url}/api/quarantine/purge/{file_hash}"
+            "DELETE",
+            "/api/quarantine/purge",
+            json=payload
         )
 
-    # --- Detection Agent Operations ---
-    def trigger_scan_cycle(self) -> Dict[str, Any]:
-        """Triggers a manual sweep/scan cycle on the Detection VM's watch folder."""
-        return self._safe_request("POST", f"{self.detection_url}/api/scan/trigger")
 
-
-# Instantiate global communication agent client
-vm_client = VMAgentClient()
+# Global instantiated module operations interfaces
+detection_client = DetectionClient()
+backup_client = BackupClient()
+quarantine_client = QuarantineClient()
