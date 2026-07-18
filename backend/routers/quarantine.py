@@ -1,18 +1,24 @@
 """
 Quarantine Sandbox Router
-Tracks isolated payloads and provides administrative release/purge controls.
+
+Dashboard interface for Quarantine VM Agent.
+
+Architecture:
+
+Dashboard
+    |
+    | X-API-Key
+    |
+Quarantine Agent
+    |
+    v
+Quarantine Storage
 """
 
-from fastapi import APIRouter, Depends, HTTPException
-from typing import List
-from sqlalchemy.orm import Session
 
-from database import get_db
-from models.models import QuarantineFile
-from schemas.schemas import (
-    QuarantineFileResponse,
-    QuarantineReleaseRequest
-)
+from fastapi import APIRouter, Depends, HTTPException
+from typing import List, Dict, Any
+
 from dependencies import require_permission
 from services.vm_client import quarantine_client
 
@@ -23,123 +29,149 @@ router = APIRouter(
 )
 
 
+
 @router.get(
     "",
-    response_model=List[QuarantineFileResponse],
-    dependencies=[require_permission("quarantine.view")]
+    dependencies=[
+        require_permission("quarantine.view")
+    ]
 )
-def get_quarantine_files(
-    db: Session = Depends(get_db)
-):
+def get_quarantine_files():
+
     """
-    Lists all suspicious or malicious objects
-    locked in the sandbox environment.
+    Retrieves live quarantine inventory
+    from Quarantine VM.
     """
 
-    return db.query(QuarantineFile).all()
+
+    agent_call = (
+        quarantine_client
+        .get_quarantine_files()
+    )
+
+
+    if agent_call.get("status") != "ONLINE":
+
+        raise HTTPException(
+            status_code=502,
+            detail="Quarantine VM unavailable"
+        )
+
+
+    return agent_call.get(
+        "data",
+        []
+    )
 
 
 
 @router.post(
-    "/{file_id}/release",
-    dependencies=[require_permission("quarantine.manage")]
+    "/release",
+    dependencies=[
+        require_permission("quarantine.manage")
+    ]
 )
 def release_from_quarantine(
-    file_id: int,
-    payload: QuarantineReleaseRequest,
-    db: Session = Depends(get_db)
+    payload: Dict[str, Any]
 ):
+
     """
-    Commands the Quarantine VM to safely
-    extract and deploy an isolated object.
+    Release a quarantined file.
+    
+    Expected:
+    {
+        "filename": "qq.txt"
+    }
     """
 
-    q_file = (
-        db.query(QuarantineFile)
-        .filter(
-            QuarantineFile.id == file_id
-        )
-        .first()
+
+    filename = payload.get(
+        "filename"
     )
 
 
-    if not q_file or q_file.status != "ISOLATED":
+    if not filename:
+
         raise HTTPException(
             status_code=400,
-            detail="Target file not found or already processed"
+            detail="filename required"
         )
 
 
-    agent_call = quarantine_client.release_quarantine(
-        q_file.sha256_hash,
-        payload.release_to_path
+    agent_call = (
+        quarantine_client
+        .release_quarantine(
+            filename
+        )
     )
 
 
     if agent_call.get("status") != "ONLINE":
+
         raise HTTPException(
             status_code=502,
-            detail="Quarantine VM Agent communication failure"
+            detail="Quarantine VM release failed"
         )
-
-
-    q_file.status = "RELEASED"
-    db.commit()
 
 
     return {
         "status": "SUCCESS",
-        "message": "Asset safely extracted and restored"
+        "agent": agent_call
     }
 
 
 
-@router.delete(
-    "/{file_id}/purge",
-    dependencies=[require_permission("quarantine.manage")]
+@router.post(
+    "/purge",
+    dependencies=[
+        require_permission("quarantine.manage")
+    ]
 )
 def purge_malicious_payload(
-    file_id: int,
-    db: Session = Depends(get_db)
+    payload: Dict[str, Any]
 ):
+
     """
-    Permanently deletes a confirmed malicious
-    binary payload from isolated storage.
+    Permanently delete quarantined file.
+
+    Expected:
+
+    {
+        "filename":"qq.txt"
+    }
     """
 
-    q_file = (
-        db.query(QuarantineFile)
-        .filter(
-            QuarantineFile.id == file_id
-        )
-        .first()
+
+    filename = payload.get(
+        "filename"
     )
 
 
-    if not q_file:
+    if not filename:
+
         raise HTTPException(
-            status_code=404,
-            detail="Target file not found"
+            status_code=400,
+            detail="filename required"
         )
 
 
-    agent_call = quarantine_client.purge_quarantine(
-        q_file.sha256_hash
+    agent_call = (
+        quarantine_client
+        .purge_quarantine(
+            filename
+        )
     )
 
 
     if agent_call.get("status") != "ONLINE":
+
         raise HTTPException(
             status_code=502,
-            detail="Quarantine VM Agent failure during purge operation"
+            detail="Quarantine VM purge failed"
         )
-
-
-    q_file.status = "DELETED"
-    db.commit()
 
 
     return {
         "status": "SUCCESS",
-        "message": "Threat payload permanently eliminated from sandbox storage"
+        "agent": agent_call
     }

@@ -107,40 +107,86 @@ class BackupClient(BaseEngineClient):
             json=payload
         )
 
+
 class QuarantineClient(BaseEngineClient):
     """
     Interfaces with Quarantine VM isolation and recovery operations.
     """
 
     def __init__(self):
+
         url = getattr(
             settings,
-            "QUARANTINE_SERVICE_URL",
-            "http://localhost:8003"
+            "QUARANTINE_AGENT_URL",
+            "http://127.0.0.1:8003"
         )
+
         super().__init__(url)
+
+
+    def _headers(self):
+
+        return {
+            "X-API-Key": settings.AGENT_API_KEY
+        }
+
+
+    def get_quarantine_files(self):
+
+        """
+        Retrieves quarantined files.
+        """
+
+        return self._safe_request(
+            "GET",
+            "/api/quarantine",
+            headers=self._headers()
+        )
 
 
     def release_quarantine(
         self,
-        sha256_hash: str,
-        release_to_path: str
-    ) -> Dict[str, Any]:
+        filename: str
+    ):
+
         """
-        Requests release of an isolated file.
+        Releases a quarantined file back
+        into backup inbox.
         """
 
         payload = {
-            "sha256_hash": sha256_hash,
-            "release_to_path": release_to_path
+            "filename": filename
         }
+
 
         return self._safe_request(
             "POST",
             "/api/quarantine/release",
+            headers=self._headers(),
             json=payload
         )
 
+
+    def purge_quarantine(
+        self,
+        filename: str
+    ):
+
+        """
+        Permanently deletes a quarantined file.
+        """
+
+        payload = {
+            "filename": filename
+        }
+
+
+        return self._safe_request(
+            "POST",
+            "/api/quarantine/purge",
+            headers=self._headers(),
+            json=payload
+        )
 
     def purge_quarantine(
         self,
